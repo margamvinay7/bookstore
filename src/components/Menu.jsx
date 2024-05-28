@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 const Menu = ({ menu, handleMenu }) => {
   const path = useLocation().pathname;
   console.log(path);
-  const css = path === "/book" ? "" : "md:hidden";
+  const css = path === "/book" || path === "/orderDetails" ? "" : "md:hidden";
   return (
     <div className={`${css}  relative`} onClick={handleMenu}>
       <GiHamburgerMenu className="w-7 h-7 text-black" />
@@ -19,11 +19,11 @@ const Menu = ({ menu, handleMenu }) => {
               <Link to="/"> Home</Link>
             </div>
           )}
-          {path !== "/cart" && (
+          {/* {path !== "/cart" && (
             <Link to="/cart" className="link">
               Cart
             </Link>
-          )}
+          )} */}
 
           {path !== "/orders" && (
             <Link to="/orders" className="link">

@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const cartApi = createApi({
   reducerPath: "cartApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: " https://bookstore.3pixelsonline.in/api/cart/",
+    baseUrl: " http://localhost:9000/api/cart/",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("auth");
       if (token) {

@@ -176,7 +176,7 @@ const Cart = () => {
     <div className="min-h-[100vh] sm:p-5 p-2 bg-gray-200 flex flex-col-reverse justify-end  md:justify-end sm:flex-row  ">
       <div className="bg-white sm:p-5 rounded-md  p-3 sm:w-[75%] md:w-[60%] ">
         <div className="flex flex-row items-center justify-between">
-          <div className="text-3xl font-medium">Student Book Store</div>
+          <div className="text-3xl font-medium">Cart</div>
           <div className="sm:flex hidden flex-row gap-x-5">
             <div className="hover:bg-blue-100 hidden md:block p-1 px-2 rounded-md">
               <Link to="/">Home</Link>

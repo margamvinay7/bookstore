@@ -8,8 +8,10 @@ const Logout = () => {
     console.log("out");
     localStorage.removeItem("auth");
     localStorage.removeItem("email");
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
 
-    navigate("/login");
+    navigate("/signIn");
   };
 
   return (
@@ -22,7 +24,7 @@ const Logout = () => {
         <div className="flex gap-x-2 mt-8 ">
           <button
             className="text-sm text-black w-20 h-8 p-1 bg-gray-300 rounded-sm "
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/signIn")}
           >
             Cancel
           </button>

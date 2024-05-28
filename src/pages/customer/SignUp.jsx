@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSignUpMutation } from "../../redux/services/authApi";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import { userActions } from "../../redux/features/authSlice";
+import { useDispatch } from "react-redux";
+import NotificationComponent from "../../components/Notification";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +17,8 @@ const SignUp = () => {
     password: "",
     confirmPassword: "",
   });
-
+  const [notification, setNotification] = useState({ message: "", type: "" });
+  const dispatch = useDispatch();
   const [signUp] = useSignUpMutation();
   const handleChange = (event) => {
     setFormData({
@@ -23,33 +28,87 @@ const SignUp = () => {
   };
 
   const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form Data:", formData); // Log complete form data object
+    try {
+      const response = await axios.post(
+        " http://localhost:9000/api/auth/checkUser",
+        formData
+      );
+      if (response.status === 200) {
+        navigate("/studentDetails", { state: { data: formData } });
+        setNotification({
+          message: "Success!",
+          type: "success",
+        });
+        setTimeout(() => {
+          setNotification({
+            message: "",
+            type: "",
+          });
+        }, 3000);
+      } else if (response.status === 400) {
+        console.log("user already exists");
+        setNotification({
+          message: "Username or Email Already Exists",
+          type: "error",
+        });
+        setTimeout(() => {
+          setNotification({
+            message: "",
+            type: "",
+          });
+        }, 3000);
+      }
+      console.log(response);
+    } catch (error) {
+      console.log(error?.response?.data?.res);
+      setNotification({
+        message: "Username or Email Already Exists",
+        type: "error",
+      });
+      setTimeout(() => {
+        setNotification({
+          message: "",
+          type: "",
+        });
+      }, 3000);
+    }
     // try {
-    //   const response = await axios.post(
-    //     " https://bookstore.3pixelsonline.in/api/auth/signUp",
-    //     formData
-    //   );
-    //   navigate("/");
-    //   localStorage.setItem("auth", "vinay");
-
+    //   const response = await signUp(formData);
     //   console.log(response);
+    //   let userRole = "";
+
+    //   localStorage.setItem("auth", response?.data?.accessToken);
+    //   const token = response?.data?.accessToken;
+    //   if (token) {
+    //     const decoded = jwtDecode(token);
+    //     const { user, roles } = decoded.UserInfo;
+    //     localStorage.setItem("role", roles);
+    //     userRole = localStorage.getItem("role");
+    //     console.log(userRole);
+    //     dispatch(userActions.user(user));
+    //     dispatch(userActions.role(roles));
+    //     localStorage.setItem("email", user);
+    //     localStorage.setItem("username", user);
+    //   }
+    //   if (userRole === "admin") {
+    //     navigate("/store");
+    //   }
+    //   if (userRole === "store") {
+    //     navigate("/store");
+    //   }
+    //   if (userRole === "student") {
+    //     navigate("/emailVerification");
+    //   }
+    //   if (!userRole) {
+    //     navigate("/signIn");
+    //   }
     // } catch (error) {
     //   console.log(error);
     // }
-    try {
-      const response = await signUp(formData);
-
-      localStorage.setItem("auth", response?.data?.accessToken);
-
-      localStorage.setItem("email", formData.email);
-
-      console.log(response);
-      navigate("/");
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   return (
@@ -57,6 +116,7 @@ const SignUp = () => {
       {/* <div className="mb-5 text-3xl font-bold text-[rgb(58,36,74)]">
         Sign <span className="text-[#D72638]">Up</span>
       </div> */}
+      {notification.message && <NotificationComponent {...notification} />}
       <div className="border border-gray-400 p-8 shadow-slate-400 shadow-md  rounded-md w-[95vw] sm:w-[50vw] md:w-[25vw]">
         <div className="flex justify-center mb-2">
           {/* <div className="text-[rgb(58,36,74)] font-extrabold text-3xl">
@@ -70,7 +130,10 @@ const SignUp = () => {
             Sign <span className="text-[#D72638]">Up</span>
           </div>
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-y-4">
+        <form
+          onSubmit={(e) => handleSubmit(e)}
+          className="flex flex-col gap-y-4"
+        >
           <input
             type="text"
             required
@@ -140,12 +203,12 @@ const SignUp = () => {
             type="submit"
             className="bg-[rgb(58,36,74)] p-2 rounded-md text-white"
           >
-            Sign Up
+            Submit
           </button>
         </form>
         <div className="flex justify-center gap-x-1 mt-2">
           <span>Already have an account?</span>
-          <Link to="/">
+          <Link to="/signIn">
             <span className="font-medium underline text-[rgb(58,36,74)]">
               Sign&nbsp;
               <span className="text-[#D72638] underline">In</span>

@@ -1,23 +1,88 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./emailVerification.css";
+import axios from "axios";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useSignUpMutation } from "../../../redux/services/authApi";
+import { jwtDecode } from "jwt-decode";
+import { userActions } from "../../../redux/features/authSlice";
+import { useDispatch } from "react-redux";
 
 const EmailVerification = () => {
-  const [error, setError] = useState(true); // State to handle errors
+  const [error, setError] = useState(false); // State to handle errors
   const [success, setSuccess] = useState(false);
   const [otp, setOtp] = useState(["", "", "", ""]); // State to store OTP inputs
   const inputRefs = useRef([]);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const [signUp] = useSignUpMutation();
+  const { data: formData } = location.state;
+  console.log(formData);
+  const handleSubmit = async () => {
+    const otpCheck = otp.join("");
 
-  const handleSubmit = () => {
-    const otpCheck = otp.join(""); // Concatenate OTP inputs
-    if (otpCheck === "1234") {
-      // Replace "1234" with your correct OTP
-      console.log("OTP is correct. Proceed with verification.");
-      // You can add further actions here, such as navigating to the next step
-    } else {
+    try {
+      const response = await axios.post(
+        "http://localhost:9000/api/email/verifyEmail",
+        {
+          otp: otpCheck,
+        },
+        {
+          withCredentials: true, // Include credentials (cookies) in the request
+        }
+      );
+      console.log(response);
+      if (response.status === 200) {
+        // Replace "1234" with your correct OTP
+        console.log("OTP is correct. Proceed with verification.");
+        setSuccess(true);
+        handleSignUp();
+
+        // You can add further actions here, such as navigating to the next step
+      }
+      setOtp(["", "", "", ""]);
+    } catch (error) {
+      console.log(error);
+
       console.log("OTP is incorrect. Please try again.");
       setError(true); // Set error state to true
     }
-    setOtp(["", "", "", ""]);
+  };
+
+  const handleSignUp = async () => {
+    try {
+      const response = await signUp(formData).unwrap();
+      console.log(response);
+      let userRole = "";
+
+      localStorage.setItem("auth", response?.accessToken);
+      const token = response?.accessToken;
+      if (token) {
+        const decoded = jwtDecode(token);
+        const { user, roles } = decoded.UserInfo;
+        localStorage.setItem("role", roles);
+        userRole = localStorage.getItem("role");
+        console.log(userRole);
+        dispatch(userActions.user(user));
+        dispatch(userActions.role(roles));
+        localStorage.setItem("email", user);
+        localStorage.setItem("username", user);
+      }
+      if (userRole === "admin") {
+        navigate("/store");
+      }
+      if (userRole === "store") {
+        navigate("/store");
+      }
+      if (userRole === "student") {
+        navigate("/");
+      }
+      if (!userRole) {
+        navigate("/signIn");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleChange = (index, value) => {
@@ -45,6 +110,31 @@ const EmailVerification = () => {
       inputRefs.current[index - 1].focus();
     }
   };
+
+  const sendOtp = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:9000/api/email/generateEmail",
+        {
+          name: formData?.fullName,
+          email: formData?.email,
+        },
+        {
+          withCredentials: true, // Include credentials (cookies) in the request
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    let didSendOtp = false;
+    if (!didSendOtp) {
+      sendOtp();
+      didSendOtp = true;
+    }
+  }, []);
 
   return (
     <div className="min-h-[100vh] flex justify-center items-center flex-col ">

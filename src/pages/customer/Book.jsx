@@ -3,18 +3,25 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Image from "../../assets/book.jpg";
 import { FaRupeeSign } from "react-icons/fa";
 import { useAddToCartMutation } from "../../redux/services/cartApi";
+import { useGetStudentQuery } from "../../redux/services/authApi";
 import Menu from "../../components/Menu";
+import axios from "axios";
+import NotificationComponent from "../../components/Notification";
 
 const Book = () => {
   const navigate = useNavigate();
   const [menu, setMenu] = useState(false);
   const location = useLocation();
+  const [notification, setNotification] = useState({ message: "", type: "" });
+  const [student, setStudent] = useState();
   const { item } = location.state;
-
+  console.log(item);
   const savedEmail = localStorage.getItem("email");
   const handleMenu = () => {
     setMenu(!menu);
   };
+  const { data: studentData } = useGetStudentQuery(savedEmail);
+  console.log(studentData);
   const [cart] = useAddToCartMutation();
 
   const addToCart = async () => {
@@ -23,15 +30,55 @@ const Book = () => {
         bookId: item.book_id,
         studentId: savedEmail,
         quantity: 1,
-      }).then(() => {
-        navigate("/cart");
       });
+      setNotification({
+        message: "Book Added To Cart!",
+        type: "success",
+      });
+      setTimeout(() => {
+        setNotification({
+          message: "",
+          type: "",
+        });
+      }, 3000);
+      // .then(() => {
+      //   navigate("/cart");
+      // });
+    } catch (error) {
+      console.log("err", error);
+      setNotification({
+        message: "Failed to Add Book To The Cart",
+        type: "error",
+      });
+      setTimeout(() => {
+        setNotification({
+          message: "",
+          type: "",
+        });
+      }, 3000);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    try {
+      window.location.replace(
+        `http://localhost:9000/pay.php?bookId=${item.id}&studentId=${savedEmail}&amount=${item.price}&name=${student.full_name}&book=${item?.title}`
+      );
+
+      console.log(response);
     } catch (error) {
       console.log("err", error);
     }
   };
+
+  useEffect(() => {
+    if (studentData) {
+      setStudent(studentData[0]);
+    }
+  }, [studentData]);
   return (
     <div className="min-h-[100vh] p-5 bg-gray-200 flex justify-center    ">
+      {notification.message && <NotificationComponent {...notification} />}
       <div className="bg-white p-5 w-full sm:w-[50%] h-fit md:w-[30%] rounded-md ">
         <div className="flex  items-center justify-between">
           <div className="sm:text-3xl text-2xl font-medium">
@@ -61,8 +108,8 @@ const Book = () => {
               />{" "}
               {item?.price}
             </div>
-            <span>{item?.college}</span> | <span>{item?.year}</span> |{" "}
-            <span>{item?.academicyear}</span>
+            <span>{item?.collegeId}</span> | <span>{item?.courseYear}</span> |{" "}
+            <span>{item?.academicYear}</span>
           </div>
 
           <div
@@ -72,7 +119,10 @@ const Book = () => {
             Add to Cart
           </div>
 
-          <div className="text-center cursor-pointer bg-[rgb(58,36,74)] p-1 text-white rounded-md">
+          <div
+            className="text-center cursor-pointer bg-[rgb(58,36,74)] p-1 text-white rounded-md"
+            onClick={handleBuyNow}
+          >
             Buy Now
           </div>
         </div>

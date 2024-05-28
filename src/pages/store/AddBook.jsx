@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import StoreMenu from "../../components/StoreMenu";
-import { useAddItemMutation } from "../../redux/services/itemsApi";
+import { useAddBookMutation } from "../../redux/services/booksApi";
 import NotificationComponent from "../../components/Notification";
-import axios from "axios";
 
-const AddItem = () => {
+const AddBook = () => {
   const [notification, setNotification] = useState({ message: "", type: "" });
   const [form, setForm] = useState({
     title: "",
@@ -21,7 +20,7 @@ const AddItem = () => {
     });
   };
 
-  const [addItem] = useAddItemMutation();
+  const [addBook] = useAddBookMutation();
   const [menu, setMenu] = useState(false);
 
   const handleMenu = () => {
@@ -45,14 +44,10 @@ const AddItem = () => {
       form.year !== ""
     ) {
       try {
-        const response = await addItem(form).unwrap();
-        // const response = await axios.post(
-        //   "http://localhost:9000/api/item/addItem",
-        //   form
-        // );
+        const response = await addBook(form);
         console.log("fromdata", form.title);
         setNotification({
-          message: "Item Added Successfully!",
+          message: "Book Added Successfully!",
           type: "success",
         });
         setTimeout(() => {
@@ -81,7 +76,7 @@ const AddItem = () => {
       {notification.message && <NotificationComponent {...notification} />}
       <div className="bg-white  shadow-md rounded-lg p-6 flex flex-col items-center w-[90vw] ">
         <div className="flex justify-between w-full items-center">
-          <h2 className="text-2xl font-bold mb-4">Add Item</h2>
+          <h2 className="text-2xl font-bold mb-4">Add Book</h2>
           <StoreMenu menu={menu} handleMenu={handleMenu} />
         </div>
         <div className="w-full">
@@ -165,4 +160,4 @@ const AddItem = () => {
   );
 };
 
-export default AddItem;
+export default AddBook;

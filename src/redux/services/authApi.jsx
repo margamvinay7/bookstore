@@ -4,7 +4,7 @@ import SignIn from "../../pages/customer/SignIn";
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: " https://bookstore.3pixelsonline.in/api/auth/",
+    baseUrl: " http://localhost:9000/api/auth/",
   }),
   tagTypes: ["auth"],
   endpoints: (builder) => ({
@@ -31,6 +31,14 @@ export const authApi = createApi({
       }),
       invalidatesTags: ["auth"],
     }),
+    addUser: builder.mutation({
+      query: (credentials) => ({
+        url: "/addUser",
+        method: "POST",
+        body: credentials,
+      }),
+      invalidatesTags: ["auth"],
+    }),
   }),
 });
 
@@ -39,4 +47,5 @@ export const {
   useSignInMutation,
   useSignUpMutation,
   useGetAccessTokenQuery,
+  useAddUserMutation,
 } = authApi;

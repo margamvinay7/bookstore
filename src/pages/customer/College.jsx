@@ -8,20 +8,23 @@ import { FiShoppingCart } from "react-icons/fi";
 import axios from "axios";
 import { MdArrowForwardIos } from "react-icons/md";
 
-const Home = () => {
+const College = () => {
   const [searchList, setSearchList] = useState([]);
   const [books, setBooks] = useState([]);
   const [menu, setMenu] = useState(false);
   const [colleges, setColleges] = useState([]);
-  // const { data: booksData } = useGetBooksQuery();
-  // console.log(booksData);
+  const [branchList, setBranchList] = useState([]);
+  //   const { data: booksData } = useGetBooksQuery();
+  //   console.log(booksData);
   const handleMenu = () => {
     setMenu(!menu);
   };
 
-  const getColleges = async () => {
+  const handleBranch = () => {};
+
+  const getKits = async () => {
     const response = await axios.get(
-      "http://localhost:9000/api/college/getColleges"
+      "http://localhost:9000/api/kit/getAllKits"
     );
     console.log(response.data);
     setColleges(response?.data);
@@ -43,13 +46,13 @@ const Home = () => {
   useEffect(() => {
     // setBooks(booksData);
     // setSearchList(booksData);
-    getColleges();
+    getKits();
   }, []);
   return (
     <div className="min-h-[100vh] flex justify-center  p-5 bg-gray-200">
-      <div className="bg-white md:w-[60vw] p-5 rounded-md ">
+      <div className="bg-white  w-full p-5 rounded-md ">
         <div className="flex  items-center justify-between">
-          <div className="sm:text-3xl text-2xl font-medium">Book Store</div>
+          <div className="sm:text-3xl text-2xl font-medium">Books</div>
           <div className="sm:flex hidden flex-row gap-x-5">
             <div className="flex items-center bg-white pe-2 gap-x-1 rounded-md">
               <input
@@ -105,24 +108,56 @@ const Home = () => {
         </div>
         {/* mapping of items in cart is start from here */}
 
+        <div className="flex justify-between sm:justify-center gap-x-5 my-5">
+          <select className="border border-black drop-shadow-2xl p-1 rounded-md ">
+            <option>Select Branch</option>
+            {branchList?.map((branch) => (
+              <option value={branch}>{branch}</option>
+            ))}
+          </select>
+          <select className="border border-black drop-shadow-2xl p-1 rounded-md ">
+            <option>Select Course Year</option>
+            {branchList?.map((branch) => (
+              <option value={branch}>{branch}</option>
+            ))}
+          </select>
+          {/* <select className="border border-black">
+            <option>Select Academic Year</option>
+            {branchList?.map((branch) => (
+              <option value={branch}>{branch}</option>
+            ))}
+          </select> */}
+        </div>
+
         {/* grid style for below sm:grid-cols-2 md:grid-cols-4 */}
-        <div className="grid grid-cols-1  gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4   gap-3">
           {colleges?.map((item) => (
-            <Link to="/college" state={{ item: item }}>
+            <Link to="/book" state={{ item: item }}>
               <div
                 id="items-list"
-                className="min-h-[10rem]  rounded-md  p-3 border flex border-black/10 shadow-sm shadow-gray-400 items-center"
+                className="h-[30rem]  rounded-md  p-3 border flex-col border-black/10 shadow-sm shadow-gray-400 items-center"
               >
-                <div className="w-24  h-24 mx-1 sm:w-48 sm:h-48  flex items-center">
+                {/* <div className="w-24  h-24 mx-1 sm:w-48 sm:h-48  flex items-center">
                   <img
                     src={`data:image/jpg;charset=utf8;base64,${item.image}`}
                     className="w-[100%] h-[100%] rounded-full"
                   />
-                </div>
-                <div className="  w-[60%] h-[100%] ms-4 flex items-center justify-between">
-                  <div className="font-medium text-wrap">{item.name}</div>
-                  <div className="min-w-7 h-7 flex justify-center items-center bg-gray-400 rounded-full">
-                    <MdArrowForwardIos className="w-5 h-5 " />
+                </div> */}
+
+                <img src={Image} className="w-[100%] h-[75%]" />
+
+                <div className="ms-4 flex flex-col ">
+                  <div className="font-medium text-wrap flex ">
+                    <div className="w-16">Title</div> : {item.title}
+                  </div>
+                  <div className="font-medium text-wrap flex ">
+                    <div className="w-16">College</div> : {item.collegeId}
+                  </div>
+                  <div className="font-medium text-wrap flex ">
+                    <div className="w-16">Course</div> : {item.courseYear}
+                  </div>
+                  <div className="font-medium text-wrap flex ">
+                    <div className="w-16">Price</div> : {item.price}
                   </div>
                 </div>
               </div>
@@ -136,4 +171,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default College;
