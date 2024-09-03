@@ -9,9 +9,11 @@ import {
 } from "../../redux/services/cartApi";
 import { Link } from "react-router-dom";
 import Menu from "../../components/Menu";
+import { useGetStudentQuery } from "../../redux/services/authApi";
 
 const CartList = ({ item }) => {
   const [quantity, setQuantity] = useState(item?.quantity);
+  const [student, setStudent] = useState();
 
   const incrementQuantity = () => {
     setQuantity(quantity + 1);
@@ -22,7 +24,10 @@ const CartList = ({ item }) => {
       setQuantity(quantity - 1);
     }
   };
-
+  console.log("hi here", item, "here");
+  const savedEmail = localStorage.getItem("email");
+  const { data: studentData } = useGetStudentQuery(savedEmail);
+  console.log("student", student, studentData);
   const [deleteCart] = useDeleteMutation();
   const [updateCart] = useUpdateMutation();
 
@@ -35,6 +40,49 @@ const CartList = ({ item }) => {
       console.log(error);
     }
   };
+
+  const handleBuyNow = async () => {
+    try {
+      window.location.replace(
+        `http://localhost:9000/api/pay.php?bookId=${item?.kitId}&studentId=${savedEmail}&amount=${item?.kit_details?.price}&name=${student?.full_name}&book=${item?.kit_details?.title}&college=${item?.kit_details?.collegeId}`
+      );
+
+      console.log(response);
+    } catch (error) {
+      console.log("err", error);
+    }
+  };
+
+  function copyFunction() {
+    // Get the text to be copied (use the text field if available)
+    var textToCopy = document.getElementById("copyText")
+      ? document.getElementById("copyText").value
+      : window.getSelection().toString();
+
+    // Check for Clipboard API support
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(textToCopy).then(
+        function () {
+          console.log("Copied to clipboard successfully!");
+        },
+        function (err) {
+          console.error("Failed to copy to clipboard: ", err);
+        }
+      );
+    } else {
+      // For older browsers without Clipboard API
+      var textArea = document.createElement("textarea");
+      textArea.value = textToCopy;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      console.log("Copied to clipboard (fallback method)");
+    }
+
+    // Optional: Alert the user about successful copy
+    alert("Text copied to clipboard!");
+  }
 
   const handleQuantity = async (e) => {
     let updateQuantity = "";
@@ -57,6 +105,12 @@ const CartList = ({ item }) => {
     }
   };
 
+  useEffect(() => {
+    if (studentData) {
+      setStudent(studentData[0]);
+    }
+  }, [studentData]);
+
   return (
     <div>
       <div
@@ -64,33 +118,37 @@ const CartList = ({ item }) => {
         className=" h-56 md:h-64 flex  p-3 border border-black/10 shadow-sm shadow-gray-400"
       >
         <img
-          src={Image}
+          src={`data:image/jpg;charset=utf8;base64,${item?.kit_details?.image}`}
           className="min-w-[50%] max-w-[50%] md:min-w-[40%] md:max-w-[40%] h-[100%]"
         />
 
-        <div className="ms-4">
-          <div className="font-medium text-sm sm:text-base ">
-            {item?.book_details?.title}
-          </div>
-          {item?.book_details?.stock_quantity > 10 ? (
-            <div className="text-xs text-green-600">In Stock</div>
-          ) : (
-            <div className="text-xs text-red-600">{`only ${item?.book_details?.stock_quantity} stocks left`}</div>
-          )}
-          <div className="text-sm">{item?.book_details?.college}</div>
-          <div className="text-sm">{item?.book_details?.year}</div>
+        <div className="ms-4 w-full ">
+          <div className=" flex flex-col sm:flex sm:flex-row   justify-between w-full items-start">
+            <div>
+              <div className="font-medium text-sm sm:text-base ">
+                {item?.kit_details?.title}
+              </div>
+              {item?.kit_details?.stock_quantity > 10 ? (
+                <div className="text-xs text-green-600">In Stock</div>
+              ) : (
+                <div className="text-xs text-red-600">{`only ${item?.kit_details?.stock_quantity} stocks left`}</div>
+              )}
+              <div className="text-sm">{item?.kit_details?.collegeId}</div>
+              <div className="text-sm">{item?.kit_details?.courseyear}</div>
+            </div>
 
-          <div className="font-medium text-lg flex items-center">
-            <FaRupeeSign
-              style={{
-                width: 12,
-                height: 12,
-              }}
-            />
-            {item?.book_details?.price}
+            <div className="font-medium text-lg flex items-center">
+              <FaRupeeSign
+                style={{
+                  width: 12,
+                  height: 12,
+                }}
+              />
+              {item?.kit_details?.price}
+            </div>
           </div>
-          <div className="flex-col  items-center p-0 ">
-            <div
+          <div className="flex-col flex gap-y-2   p-0 ">
+            {/* <div
               className="border border-[rgb(58,36,74)] rounded-md flex items-center justify-between"
               onClick={(e) => handleQuantity(e)}
             >
@@ -115,14 +173,22 @@ const CartList = ({ item }) => {
               >
                 +
               </button>
-            </div>
+            </div> */}
 
             <div
-              className="text-sm flex items-center gap-x-2 mt-2 cursor-pointer border border-[#D72638] p-1 hover:bg-red-600 hover:text-white rounded-md"
+              className="text-sm flex items-center w-28 gap-x-2 mt-2 cursor-pointer border border-[#D72638] p-1 hover:bg-red-600 hover:text-white rounded-md"
               onClick={() => handleDelete(item?.cart_id)}
             >
               <FaTrashCan /> Delete Item
             </div>
+            <Link>
+              <div
+                onClick={handleBuyNow}
+                className="text-center flex w-28  justify-center cursor-pointer bg-[rgb(58,36,74)] p-1 text-white rounded-md"
+              >
+                Buy Now
+              </div>
+            </Link>
           </div>
         </div>
       </div>
@@ -173,8 +239,8 @@ const Cart = () => {
   }, [cartData]);
 
   return (
-    <div className="min-h-[100vh] sm:p-5 p-2 bg-gray-200 flex flex-col-reverse justify-end  md:justify-end sm:flex-row  ">
-      <div className="bg-white sm:p-5 rounded-md  p-3 sm:w-[75%] md:w-[60%] ">
+    <div className="min-h-[100vh] sm:p-5 p-2 bg-gray-200 flex justify-center ">
+      <div className="bg-white sm:p-5 rounded-md  p-3 w-full md:w-[60%] ">
         <div className="flex flex-row items-center justify-between">
           <div className="text-3xl font-medium">Cart</div>
           <div className="sm:flex hidden flex-row gap-x-5">
@@ -199,7 +265,7 @@ const Cart = () => {
         {/* mapping of items in cart end here */}
       </div>
       <hr className="border border-black/20 my-3 sm:hidden" />
-      <div className="p-5  bg-white sm:ms-4 rounded-md   md:w-[25%] h-fit ">
+      {/* <div className="p-5  bg-white sm:ms-4 rounded-md   md:w-[25%] h-fit ">
         <div className="flex text-xl justify-between font-medium mb-5">
           Subtotal ({cart.length} items):
           <div className="font-medium text-lg flex items-center">
@@ -215,7 +281,7 @@ const Cart = () => {
         <button className="bg-[rgb(58,36,74)] text-center w-full text-white p-2  rounded-md">
           Proceed to buy
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

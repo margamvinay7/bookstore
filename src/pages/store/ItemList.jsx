@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
-import { useGetBooksBycollegeAndCourseQuery } from "../../redux/services/booksApi";
+import { useGetItemsBycollegeAndCourseQuery } from "../../redux/services/itemsApi";
 import StoreMenu from "../../components/StoreMenu";
 import Image from "../../assets/book.jpg";
 import { useSelector } from "react-redux";
 import NotificationComponent from "../../components/Notification";
 import axios from "axios";
 
-const ItemsList = () => {
+const ItemList = () => {
   const items = ["", "", "", ""];
   const [collegeList, setCollegeList] = useState([]);
   const [collegeValue, setCollegeValue] = useState();
@@ -51,7 +51,7 @@ const ItemsList = () => {
 
   const getBranchAndCourseyear = async () => {
     const response = await axios.get(
-      `http://localhost:9000/api/books/getCollegesAndYear`
+      `http://localhost:9000/api/item/getCollegesAndYear`
     );
     console.log(response.data);
     setCollegeList(response?.data?.branch);
@@ -60,7 +60,7 @@ const ItemsList = () => {
 
   const userRole =
     useSelector((state) => state.user.role) || localStorage.getItem("role");
-  const { data: booksData } = useGetBooksBycollegeAndCourseQuery({
+  const { data: booksData } = useGetItemsBycollegeAndCourseQuery({
     college: collegeValue,
     course: courseyearValue,
   });
@@ -76,7 +76,7 @@ const ItemsList = () => {
     <div className="bg-gray-200 p-3">
       <div className="bg-white p-2 min-h-[calc(100vh-24px)]">
         <div className="flex justify-between">
-          <div className="text-2xl">Books List</div>
+          <div className="text-2xl">Items List</div>
           <StoreMenu menu={menu} handleMenu={handleMenu} />
         </div>
         <hr className="border border-gray-300 mb-4" />
@@ -107,34 +107,7 @@ const ItemsList = () => {
             ))}
           </select> */}
         </div>
-        {/* <table className=" table-auto min-w-full ">
-          <thead>
-            <tr className="border-b-2 border-gray-400 h-9 hover:bg-gray-300 ">
-              <td className="font-medium p-2"> Items</td>
-              <td className="font-medium">Quantity</td>
-              <td className="font-medium">College</td>
-              <td>
-                <StoreMenu menu={menu} handleMenu={handleMenu} />
-              </td>
-            </tr>
-          </thead>
 
-          <tbody>
-            {books?.map((item) => (
-              <tr className="border-b-2 border-gray-400 h-9 hover:bg-gray-300">
-                <td className="p-2">{item.title}</td>
-                <td>{item.stock_quantity}</td>
-                <td>{item.college}</td>
-
-                <td>
-                  <Link to="/update" state={{ id: item?.book_id }}>
-                    <FaEdit />
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {books?.map((item) => (
             <div
@@ -142,7 +115,7 @@ const ItemsList = () => {
               className=" h-[30rem] w-full relative rounded-md  p-3 border flex-col border-black/10 shadow-sm shadow-gray-400"
             >
               {userRole === "admin" && (
-                <Link to="/update" state={{ id: item.book_id }}>
+                <Link to="/updateItem" state={{ id: item.item_id }}>
                   <div className="flex justify-end z-10  absolute right-4 top-4 ">
                     <div className="bg-gray-200 p-2 rounded-full ">
                       <FaEdit className="w-5 h-5   " />
@@ -170,4 +143,4 @@ const ItemsList = () => {
   );
 };
 
-export default ItemsList;
+export default ItemList;

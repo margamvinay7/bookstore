@@ -7,8 +7,9 @@ import { useGetStudentQuery } from "../../redux/services/authApi";
 import Menu from "../../components/Menu";
 import axios from "axios";
 import NotificationComponent from "../../components/Notification";
+import StoreMenu from "../../components/StoreMenu";
 
-const Book = () => {
+const Kit = () => {
   const navigate = useNavigate();
   const [menu, setMenu] = useState(false);
   const location = useLocation();
@@ -23,11 +24,12 @@ const Book = () => {
   const { data: studentData } = useGetStudentQuery(savedEmail);
   console.log(studentData);
   const [cart] = useAddToCartMutation();
+  const role = localStorage.getItem("role");
 
   const addToCart = async () => {
     try {
       const response = await cart({
-        kitId: item.kitId,
+        bookId: item.book_id,
         studentId: savedEmail,
         quantity: 1,
       });
@@ -59,32 +61,18 @@ const Book = () => {
     }
   };
 
-  const handleBuyNow = async () => {
-    try {
-      window.location.replace(
-        `http://localhost:9000/api/pay.php?bookId=${item?.kitId}&studentId=${savedEmail}&amount=${item.price}&name=${student.full_name}&book=${item?.title}&college=${item?.collegeId}`
-      );
-
-      console.log(response);
-    } catch (error) {
-      console.log("err", error);
-    }
-  };
-
   useEffect(() => {
     if (studentData) {
       setStudent(studentData[0]);
     }
   }, [studentData]);
   return (
-    <div className="min-h-[100vh] p-5 bg-gray-200 flex justify-center    ">
+    <div className="min-h-[100vh] p-5 bg-gray-200 flex justify-center   ">
       {notification.message && <NotificationComponent {...notification} />}
-      <div className="bg-white p-5 w-full sm:w-[50%] h-fit md:w-[30%] rounded-md ">
+      <div className="bg-white p-5 w-full sm:w-[80%]  h-fit md:w-[40%] rounded-md ">
         <div className="flex  items-center justify-between">
-          <div className="sm:text-3xl text-2xl font-medium">
-            Student Book Store
-          </div>
-          <Menu menu={menu} handleMenu={handleMenu} />
+          <div className="sm:text-3xl text-2xl font-medium">Kit</div>
+          <StoreMenu menu={menu} handleMenu={handleMenu} />
         </div>
         <hr className="border border-black/20 my-3" />
 
@@ -113,6 +101,9 @@ const Book = () => {
             </div>
             <span>{item?.collegeId}</span> | <span>{item?.courseyear}</span> |{" "}
             <span>{item?.academicyear}</span>
+            <div className="font-medium">
+              Stock Quantity : {item?.stock_quantity}
+            </div>
             <div>
               <div className="font-medium">Books :</div>
               {item.books.map((book) => (
@@ -127,19 +118,20 @@ const Book = () => {
             </div>
           </div>
 
-          <div
-            onClick={addToCart}
-            className="text-center cursor-pointer bg-[rgb(58,36,74)] p-1 my-2 text-white rounded-md"
-          >
-            Add to Cart
-          </div>
+          {role !== "store" && (
+            <Link to="/updateKit" state={{ id: item?.kitId }}>
+              <div className="text-center cursor-pointer bg-[rgb(58,36,74)] p-1 my-2 text-white rounded-md">
+                Update Kit
+              </div>
+            </Link>
+          )}
 
-          <div
+          {/* <div
             className="text-center cursor-pointer bg-[rgb(58,36,74)] p-1 text-white rounded-md"
             onClick={handleBuyNow}
           >
             Buy Now
-          </div>
+          </div> */}
         </div>
 
         {/* mapping of items in cart end here */}
@@ -148,4 +140,4 @@ const Book = () => {
   );
 };
 
-export default Book;
+export default Kit;

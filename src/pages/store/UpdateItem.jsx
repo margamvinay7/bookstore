@@ -12,8 +12,8 @@ const UpdateItem = () => {
   // const [item, setitem] = useState([]);
   const [notification, setNotification] = useState({ message: "", type: "" });
   const path = useLocation();
-  //   const { id } = path.state;
-  const { data: itemData } = useGetItemByIdQuery(1);
+  const { id } = path.state;
+  const { data: itemData } = useGetItemByIdQuery(id);
   console.log(itemData);
   const userRole =
     useSelector((state) => state.user.role) || localStorage.getItem("role");

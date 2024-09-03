@@ -14,6 +14,7 @@ const UpdateBook = () => {
   const path = useLocation();
   const { id } = path.state;
   const { data: bookData } = useGetBookQuery(id);
+  console.log(bookData);
   const userRole =
     useSelector((state) => state.user.role) || localStorage.getItem("role");
   console.log(id);
@@ -105,7 +106,7 @@ const UpdateBook = () => {
             <input
               onChange={(e) => handleChange(e)}
               disabled={userRole !== "admin"}
-              value={book.college}
+              value={book.collegeId}
               id="college"
               name="college"
               placeholder="Enter item College"

@@ -23,6 +23,13 @@ export const booksApi = createApi({
       query: () => "/getBooks",
       providesTags: ["books"],
     }),
+    getBooksBycollegeAndCourse: builder.query({
+      query: (args) => {
+        const { college, course } = args;
+        return `/getBooksBycollegeAndCourse?college=${college}&course=${course}`;
+      },
+      providesTags: ["books"],
+    }),
     addBook: builder.mutation({
       query: (book) => ({
         url: "/addBook",
@@ -47,4 +54,5 @@ export const {
   useGetBooksQuery,
   useAddBookMutation,
   useUpdateBookMutation,
+  useGetBooksBycollegeAndCourseQuery,
 } = booksApi;

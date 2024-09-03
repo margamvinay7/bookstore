@@ -29,6 +29,10 @@ import College from "./pages/customer/College";
 import UpdateBook from "./pages/store/UpdateBook";
 import AddItem from "./pages/store/AddItem";
 import UpdateItem from "./pages/store/UpdateItem";
+import Kits from "./pages/store/Kits";
+import Kit from "./pages/store/Kit";
+import OrdersIssued from "./pages/store/OrdersIssued";
+import ItemList from "./pages/store/ItemList";
 
 const App = () => {
   const location = useLocation();
@@ -62,20 +66,26 @@ const App = () => {
                 <Route path="/addbook" element={<AddBook />} />
                 <Route path="/addItem" element={<AddItem />} />
                 <Route path="/addStoreKeeper" element={<AddUser />} />
+                <Route path="/updateItem" element={<UpdateItem />} />
+                <Route path="/addkit" element={<AddKit />} />
+                <Route path="/updateKit" element={<UpdateKit />} />
+                <Route path="/addcollege" element={<AddCollege />} />
+                <Route path="/update" element={<UpdateBook />} />
               </>
             )}
             {(role === "admin" || role === "store") && (
               <>
                 <Route path="/store" element={<Store />} />
                 <Route path="/storeOrders" element={<Orders />} />
-                <Route path="/update" element={<UpdateBook />} />
-                <Route path="/updateItem" element={<UpdateItem />} />
+                <Route path="/ordersIssued" element={<OrdersIssued />} />
+
                 <Route path="/itemsList" element={<ItemsList />} />
+                <Route path="/itemList" element={<ItemList />} />
                 <Route path="/updateOrder" element={<UpdateOrder />} />
-                <Route path="/addkit" element={<AddKit />} />
-                <Route path="/updateKit" element={<UpdateKit />} />
-                <Route path="/addcollege" element={<AddCollege />} />
+
                 <Route path="/scanner" element={<QrCodeScanner />} />
+                <Route path="/kits" element={<Kits />} />
+                <Route path="/kit" element={<Kit />} />
               </>
             )}
             {role === "student" && (

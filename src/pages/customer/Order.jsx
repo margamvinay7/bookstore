@@ -5,6 +5,7 @@ import { useGetOrdersByStudentIdQuery } from "../../redux/services/ordersApi";
 import { Link } from "react-router-dom";
 import Menu from "../../components/Menu";
 import { FiShoppingCart } from "react-icons/fi";
+import axios from "axios";
 
 const Order = () => {
   // const [searchList, setSearchList] = useState([]);
@@ -23,6 +24,13 @@ const Order = () => {
     });
     return totalAmount;
   };
+
+  // const getKit = async (id) => {
+  //   const response = await axios.get(
+  //     `http://localhost:9000/api/kit/getKit?id=${id}`
+  //   );
+  //   console.log("kitshere", response.data?.data);
+  // };
 
   const handleMenu = () => {
     setMenu(!menu);
@@ -49,9 +57,9 @@ const Order = () => {
   const arrayItems = [1, 2, 3, 4, 5];
   return (
     <div className="min-h-[100vh] sm:p-5 p-2 bg-gray-200 flex flex-col-reverse justify-end  sm:justify-center  sm:flex-row  ">
-      <div className="bg-white sm:p-5 rounded-md  p-3 sm:w-[75%] md:w-[60%] ">
+      <div className="bg-white sm:p-5 rounded-md  p-3 w-full md:w-[60%] ">
         <div className="flex flex-row items-center justify-between">
-          <div className="text-3xl font-medium">Orders</div>
+          <div className="text-3xl font-medium">Your Orders</div>
           <div className="sm:flex hidden flex-row gap-x-5">
             <div className="hover:bg-blue-100 hidden md:block p-1 px-2 rounded-md">
               <Link to="/">Home</Link>
@@ -81,33 +89,59 @@ const Order = () => {
             <Link to="/orderDetails" state={{ id: item?.order_id }}>
               <div
                 id="items-list"
-                className=" h-56 md:h-64 flex  p-3 border border-black/10 shadow-sm shadow-gray-400"
+                className=" min-h-56 sm:h-64 flex flex-col  p-3 border border-black/10 shadow-sm shadow-gray-400"
               >
-                <img
-                  src={Image}
-                  className="min-w-[50%] max-w-[50%] md:min-w-[40%] md:max-w-[40%] h-[100%]"
-                />
-
-                <div className="ms-4">
-                  <div className="font-medium text-sm sm:text-base ">
-                    {item?.book_details?.title}
+                <div className="border  border-gray-300 flex justify-between  text-xs sm:text-sm p-2 rounded-md">
+                  <div>
+                    <div className="font-medium">{item?.status}</div>
+                    <div>{item?.updated_at?.split(" ")[0]}</div>
                   </div>
+                  <div>
+                    <div>Total</div>
+                    <div>{item?.total_amount}</div>
+                  </div>
+                  <div className="">
+                    <div>ORDER PLACED</div>
+                    <div>{item?.order_date?.split(" ")[0]}</div>
+                  </div>
+                </div>
+                <div className="flex w-full">
+                  <img
+                    src={`data:image/jpg;charset=utf8;base64,${item?.kit_details?.image}`}
+                    className="min-w-[50%] max-w-[50%] sm:min-w-[30%] sm:max-w-[30%] h-[50%]"
+                  />
 
-                  <div className="text-sm">{item?.book_details?.college}</div>
+                  <div className="ms-4">
+                    <div className=" text-sm sm:text-base ">
+                      {item?.kit_details?.title}
+                    </div>
 
-                  <div className="text-sm">{item?.book_details?.year}</div>
+                    <div className="text-sm">
+                      {item?.kit_details?.collegeId}
+                    </div>
 
-                  <div className="text-sm">{item?.payment_method}</div>
-                  <div className="text-sm">{item?.status}</div>
+                    <div className="text-sm">
+                      {item?.kit_details?.courseyear}
+                    </div>
 
-                  <div className="font-medium text-lg flex items-center">
-                    <FaRupeeSign
-                      style={{
-                        width: 12,
-                        height: 12,
-                      }}
-                    />
-                    {item?.total_amount}
+                    <div className="text-sm">{item?.payment_method}</div>
+                    <Link to="/orderDetails" state={{ id: item?.order_id }}>
+                      <div className="border border-gray-300 rounded-md text-xs sm:text-sm p-2 text-white bg-[rgb(58,36,74)]">
+                        View Order Receipt
+                      </div>
+                    </Link>
+                    {/* <div className="text-sm">{item?.transactionId}</div> */}
+                    {/* <div className="text-sm">{item?.status}</div> */}
+
+                    {/* <div className="font-medium text-lg flex items-center">
+                      <FaRupeeSign
+                        style={{
+                          width: 12,
+                          height: 12,
+                        }}
+                      />
+                      {item?.total_amount}
+                    </div> */}
                   </div>
                 </div>
               </div>

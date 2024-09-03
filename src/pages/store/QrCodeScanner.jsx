@@ -110,11 +110,15 @@ const QrCodeScanner = () => {
       <div id="reader"></div>
 
       <button
-        onClick={() => startScanning()}
         disabled={isScanning}
+        className="flex justify-center w-full"
         // hidden={isScanning}
       >
-        <MdOutlineQrCodeScanner className="w-80 h-60 m-0" hidden={isScanning} />
+        <MdOutlineQrCodeScanner
+          onClick={() => startScanning()}
+          className="w-60 h-60 m-0"
+          hidden={isScanning}
+        />
         {/* <img src={QRScanner} className=" w-80 m-2 h-52" hidden={isScanning} /> */}
       </button>
     </div>

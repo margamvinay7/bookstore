@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Image from "../../assets/book.jpg";
-
 import { FaMonero, FaRupeeSign } from "react-icons/fa";
 import {
   useGetOrdersByStudentIdQuery,
-  useGetOrdersByDateQuery,
-  useGetOrdersByDateRangeQuery,
-  useGetOrdersByMonthYearQuery,
+  useGetDeliveredOrdersByDateQuery,
+  useGetDeliveredOrdersByMonthYearQuery,
+  useGetDeliveredOrdersByDateRangeQuery,
 } from "../../redux/services/ordersApi";
 import { Link } from "react-router-dom";
 import StoreMenu from "../../components/StoreMenu";
@@ -15,11 +14,11 @@ import html2pdf from "html2pdf.js";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Excel from "../../assets/excel.jpg";
-import Print from "../../assets/print.jpg";
 import Pdf from "../../assets/pdf.jpg";
+import Print from "../../assets/print.jpg";
 import * as XLSX from "xlsx";
 
-const Orders = () => {
+const OrdersIssued = () => {
   // const [searchList, setSearchList] = useState([]);
   const [orderDataByDate, setOrderDataByDate] = useState([]);
   const [orderDataByRange, setOrderDataByRange] = useState([]);
@@ -33,8 +32,8 @@ const Orders = () => {
   const [dateBtn, setDateBtn] = useState(false);
   const [rangeBtn, setRangeBtn] = useState(false);
   const [monthBtn, setMonthBtn] = useState(false);
-  const [colleges, setColleges] = useState([]);
   const [collegeValue, setCollegeValue] = useState();
+  const [colleges, setColleges] = useState([]);
   const [storedata, setStoreData] = useState({});
   console.log(startDate, endDate);
 
@@ -50,6 +49,170 @@ const Orders = () => {
       console.log(error);
     }
   };
+
+  const downloadReceipt = () => {
+    const receiptElement = document.getElementById("receipt");
+
+    if (!receiptElement) {
+      console.error("Receipt element not found");
+      return;
+    }
+
+    html2pdf()
+      .set({
+        margin: [10, 10, 10, 10], // Increased margin to avoid overlapping
+        filename: "IssuedOrders.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2, // Adjusting the scale factor
+          logging: true,
+          dpi: 192,
+          letterRendering: true,
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+      })
+      .from(receiptElement)
+      .save();
+  };
+
+  const TableToExcel = ({ tableData }) => {
+    const columnHeaders = [
+      "Order Id",
+      "Student Id",
+      "Payment Id",
+      "Order Status",
+      "Price",
+      "College",
+      "Kit Id",
+      "Kit Name",
+    ];
+
+    const exportToExcel = () => {
+      const filteredData = tableData.map((row) => ({
+        Order_Id: row.order_id,
+        Student_Id: row.student_id,
+        Payment_Id: row.transactionId,
+        Order_Status: row.status,
+        Price: row.total_amount,
+        College: row.collegeId,
+        Kit_Id: row.kitId,
+        Kit_Name: row.kit_details?.title,
+      }));
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(filteredData);
+      ws["!cols"] = columnHeaders.map(() => ({ wpx: 100 })); // Set column widths
+      ws["!cols"].forEach((col, index) => {
+        col.wch = Math.max(col.wch || 0, columnHeaders[index].length); // Set column widths based on header length
+      });
+      ws["!rows"] = [{ hpx: 30 }]; // Set row height for header row
+      columnHeaders.forEach((header, index) => {
+        const cellRef = XLSX.utils.encode_cell({ r: 0, c: index });
+        ws[cellRef] = { v: header, t: "s" }; // Assign new header name
+      });
+      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const data = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "Orders_Issued.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    return (
+      <img
+        src={Excel}
+        width={30}
+        height={20}
+        className="rounded-sm"
+        onClick={exportToExcel}
+      />
+    );
+  };
+
+  const printReceipt = () => {
+    const receiptElement = document.getElementById("receipt");
+
+    if (!receiptElement) {
+      console.error("Receipt element not found");
+      return;
+    }
+
+    html2canvas(receiptElement, {
+      scale: 2, // Adjust the scale factor if needed
+      dpi: 192,
+      letterRendering: true,
+    })
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/jpeg", 0.98);
+        const pdf = new jsPDF({
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        });
+
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        pdf.addImage(imgData, "JPEG", 10, 10, pdfWidth - 20, pdfHeight - 20); // Adjust margins if needed
+
+        // Open the PDF in a new window
+        const pdfUrl = pdf.output("bloburl");
+        const pdfWindow = window.open(pdfUrl);
+        pdfWindow.addEventListener("load", () => {
+          pdfWindow.print();
+        });
+      })
+      .catch((error) => {
+        console.error("Error generating PDF:", error);
+      });
+  };
+
+  const handleCollege = (e) => {
+    console.log(e.target.value);
+    if (e.target.value === "All") {
+      setCollegeValue(null);
+    } else {
+      setCollegeValue(e.target.value);
+    }
+  };
+
+  const {
+    data: orderByDateData,
+    error: dateError,
+    isError: isDateError,
+    refetch: refetchOrdersByDate,
+  } = useGetDeliveredOrdersByDateQuery({ date: date, college: collegeValue });
+  console.log(orderByDateData);
+  console.log(isDateError);
+  const {
+    data: ordersByRangeData,
+    isError: isRangeError,
+    refetch: refetchOrdersByRange,
+  } = useGetDeliveredOrdersByDateRangeQuery({
+    startDate: startDate,
+    endDate: endDate,
+    college: collegeValue,
+  });
+
+  const {
+    data: ordersByMonthData,
+    isError: isMonthError,
+    refetch: refetchOrdersByMonth,
+  } = useGetDeliveredOrdersByMonthYearQuery({
+    month: month?.split("-")[1],
+    year: month?.split("-")[0],
+    college: collegeValue,
+  });
 
   const savedEmail = localStorage.getItem("email");
   const role = localStorage.getItem("role");
@@ -72,33 +235,6 @@ const Orders = () => {
       getStore();
     }
   }, []);
-
-  const {
-    data: orderByDateData,
-    error: dateError,
-    isError: isDateError,
-    refetch: refetchOrdersByDate,
-  } = useGetOrdersByDateQuery({ date: date, college: collegeValue });
-
-  console.log(isDateError);
-  const {
-    data: ordersByRangeData,
-    isError: isRangeError,
-    refetch: refetchOrdersByRange,
-  } = useGetOrdersByDateRangeQuery({
-    startDate: startDate,
-    endDate: endDate,
-    college: collegeValue,
-  });
-  const {
-    data: ordersByMonthData,
-    isError: isMonthError,
-    refetch: refetchOrdersByMonth,
-  } = useGetOrdersByMonthYearQuery({
-    month: month?.split("-")[1],
-    year: month?.split("-")[0],
-    college: collegeValue,
-  });
 
   const handleMenu = () => {
     setMenu(!menu);
@@ -172,142 +308,6 @@ const Orders = () => {
     }
   };
 
-  const handleCollege = (e) => {
-    console.log(e.target.value);
-    if (e.target.value === "All") {
-      setCollegeValue(null);
-    } else {
-      setCollegeValue(e.target.value);
-    }
-  };
-
-  const downloadReceipt = () => {
-    const receiptElement = document.getElementById("receipt");
-
-    if (!receiptElement) {
-      console.error("Receipt element not found");
-      return;
-    }
-
-    html2pdf()
-      .set({
-        margin: [10, 10, 10, 10], // Increased margin to avoid overlapping
-        filename: "Order_Payments.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2, // Adjusting the scale factor
-          logging: true,
-          dpi: 192,
-          letterRendering: true,
-        },
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait",
-        },
-      })
-      .from(receiptElement)
-      .save();
-  };
-
-  const TableToExcel = ({ tableData }) => {
-    const columnHeaders = [
-      "Order Id",
-      "Student Id",
-      "Payment Id",
-      "Order Status",
-      "Price",
-      "College",
-      "Kit Id",
-      "Kit Name",
-    ];
-
-    const exportToExcel = () => {
-      const filteredData = tableData.map((row) => ({
-        Order_Id: row.order_id,
-        Student_Id: row.student_id,
-        Payment_Id: row.transactionId,
-        Order_Status: row.status,
-        Price: row.total_amount,
-        College: row.collegeId,
-        Kit_Id: row.kitId,
-        Kit_Name: row.kit_details?.title,
-      }));
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(filteredData);
-      ws["!cols"] = columnHeaders.map(() => ({ wpx: 100 })); // Set column widths
-      ws["!cols"].forEach((col, index) => {
-        col.wch = Math.max(col.wch || 0, columnHeaders[index].length); // Set column widths based on header length
-      });
-      ws["!rows"] = [{ hpx: 30 }]; // Set row height for header row
-      columnHeaders.forEach((header, index) => {
-        const cellRef = XLSX.utils.encode_cell({ r: 0, c: index });
-        ws[cellRef] = { v: header, t: "s" }; // Assign new header name
-      });
-      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-      const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const data = new Blob([excelBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(data);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "Order_Payments.xlsx");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
-
-    return (
-      <img
-        src={Excel}
-        width={30}
-        height={20}
-        className="rounded-sm"
-        onClick={exportToExcel}
-      />
-    );
-  };
-
-  const printReceipt = () => {
-    const receiptElement = document.getElementById("receipt");
-
-    if (!receiptElement) {
-      console.error("Receipt element not found");
-      return;
-    }
-
-    html2canvas(receiptElement, {
-      scale: 2, // Adjust the scale factor if needed
-      dpi: 192,
-      letterRendering: true,
-    })
-      .then((canvas) => {
-        const imgData = canvas.toDataURL("image/jpeg", 0.98);
-        const pdf = new jsPDF({
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait",
-        });
-
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-        pdf.addImage(imgData, "JPEG", 10, 10, pdfWidth - 20, pdfHeight - 20); // Adjust margins if needed
-
-        // Open the PDF in a new window
-        const pdfUrl = pdf.output("bloburl");
-        const pdfWindow = window.open(pdfUrl);
-        pdfWindow.addEventListener("load", () => {
-          pdfWindow.print();
-        });
-      })
-      .catch((error) => {
-        console.error("Error generating PDF:", error);
-      });
-  };
-
   useEffect(() => {
     if (orderByDateData) {
       console.log("changed 1");
@@ -316,23 +316,22 @@ const Orders = () => {
   }, [orderByDateData]);
   useEffect(() => {
     if (ordersByRangeData) {
-      console.log("changed 1");
+      console.log("changed 2");
       setOrderDataByRange(ordersByRangeData);
     }
   }, [ordersByRangeData]);
   useEffect(() => {
     if (ordersByMonthData) {
-      console.log("changed 1");
+      console.log("changed 3");
       setOrderDataByMonth(ordersByMonthData);
     }
   }, [ordersByMonthData]);
   const arrayItems = [1, 2, 3, 4, 5];
-
   return (
-    <div className="min-h-[100vh] sm:p-5 p-2 bg-gray-200 flex flex-col-reverse justify-end  sm:justify-center  sm:flex-row  ">
-      <div className="bg-white sm:p-5 rounded-md  p-3 w-full ">
+    <div className="min-h-[100vh]  sm:p-5 p-2 bg-gray-200 flex flex-col-reverse justify-end  sm:justify-center  sm:flex-row   ">
+      <div className="bg-white sm:p-5 rounded-md  p-3 w-full  ">
         <div className="flex flex-row items-center justify-between">
-          <div className="text-3xl font-medium">Order Payments</div>
+          <div className="text-3xl font-medium">Order Issued</div>
 
           <StoreMenu menu={menu} handleMenu={handleMenu} />
         </div>
@@ -372,12 +371,12 @@ const Orders = () => {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   type="date"
-                  className=" border border-gray-300 p-1 rounded-md  "
+                  className=" border border-gray-300 p-1 rounded-md "
                 />
               </div>
             )}
             {rangeBtn && (
-              <div className="flex flex-col">
+              <div className="flex flex-col ">
                 <div className="flex flex-col gap-y-1 mb-1 w-36 sm:w-48">
                   <label htmlFor="fromInput" className="text-sm sm:text-base">
                     From
@@ -418,6 +417,7 @@ const Orders = () => {
                 />
               </div>
             )}
+
             <div className="flex">
               <div
                 className="border border-gray-300 cursor-pointer p-1 rounded-md"
@@ -470,7 +470,7 @@ const Orders = () => {
         {dateBtn && !isDateError && (
           <div className="" id="receipt">
             <div className="flex justify-between mb-2">
-              <div>Orders Payments</div>
+              <div>Orders Issued</div>
               <div>Date :{date}</div>
             </div>
             <table className="w-full  border   text-xs border-black ">
@@ -538,7 +538,7 @@ const Orders = () => {
         {rangeBtn && !isRangeError && (
           <div className=" " id="receipt">
             <div className="flex justify-between mb-2">
-              <div>Orders Payments</div>
+              <div>Orders Issued</div>
               <div>
                 <div>Start Date : {startDate}</div>
                 <div>End Date &nbsp;&nbsp;: {endDate}</div>
@@ -609,7 +609,7 @@ const Orders = () => {
         {monthBtn && !isMonthError && (
           <div className=" " id="receipt">
             <div className="flex justify-between mb-2">
-              <div>Orders Payments</div>
+              <div>Orders Issued</div>
               <div>
                 Month & Year : {month?.split("-")[1]}-{month?.split("-")[0]}
               </div>
@@ -683,4 +683,4 @@ const Orders = () => {
   );
 };
 
-export default Orders;
+export default OrdersIssued;

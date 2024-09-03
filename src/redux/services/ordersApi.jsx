@@ -21,21 +21,47 @@ export const orderApi = createApi({
       providesTags: ["order"],
     }),
     getOrdersByDate: builder.query({
-      query: (date) => `/getOrdersByDate?date=${date}`,
+      query: (args) => {
+        const { date, college } = args;
+        return `/getOrdersByDate?date=${date}&college=${college}`;
+      },
 
       providesTags: ["order"],
     }),
     getOrdersByDateRange: builder.query({
       query: (args) => {
-        const { startDate, endDate } = args;
-        return `/getOrdersByDateRange?startDate=${startDate}&endDate=${endDate}`;
+        const { startDate, endDate, college } = args;
+        return `/getOrdersByDateRange?startDate=${startDate}&endDate=${endDate}&college=${college}`;
       },
       providesTags: ["order"],
     }),
     getOrdersByMonthYear: builder.query({
       query: (args) => {
-        const { month, year } = args;
-        return `/getOrdersByMonthYear?month=${month}&year=${year}`;
+        const { month, year, college } = args;
+        return `/getOrdersByMonthYear?month=${month}&year=${year}&college=${college}`;
+      },
+      providesTags: ["order"],
+    }),
+    getDeliveredOrdersByDate: builder.query({
+      query: (args) => {
+        const { date, college } = args;
+        return `/getDeliveredOrdersByDate?date=${date}&college=${college}`;
+      },
+
+      providesTags: ["order"],
+    }),
+    getDeliveredOrdersByDateRange: builder.query({
+      query: (args) => {
+        const { startDate, endDate, college } = args;
+        console.log(startDate, endDate, college, "in range");
+        return `/getDeliveredOrdersByDateRange?startDate=${startDate}&endDate=${endDate}&college=${college}`;
+      },
+      providesTags: ["order"],
+    }),
+    getDeliveredOrdersByMonthYear: builder.query({
+      query: (args) => {
+        const { month, year, college } = args;
+        return `/getDeliveredOrdersByMonthYear?month=${month}&year=${year}&college=${college}`;
       },
       providesTags: ["order"],
     }),
@@ -81,4 +107,7 @@ export const {
   useGetOrdersByDateQuery,
   useGetOrdersByDateRangeQuery,
   useGetOrdersByMonthYearQuery,
+  useGetDeliveredOrdersByDateQuery,
+  useGetDeliveredOrdersByMonthYearQuery,
+  useGetDeliveredOrdersByDateRangeQuery,
 } = orderApi;

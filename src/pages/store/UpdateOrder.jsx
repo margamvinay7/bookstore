@@ -101,7 +101,7 @@ const UpdateOrder = () => {
           <img src={Image} className="w-[100%] h-[60%]" />
 
           <div className="ms-4">
-            <div className="font-medium">{order?.book_details?.title}</div>
+            <div className="font-medium">{order?.kit_details?.title}</div>
             <div className="font-medium flex flex-row items-center">
               {" "}
               <FaRupeeSign
@@ -110,12 +110,15 @@ const UpdateOrder = () => {
                   height: 12,
                 }}
               />{" "}
-              {order?.book_details?.price}
+              {order?.kit_details?.price}
             </div>
-            <span>{order?.book_details?.college}</span> |{" "}
-            <span>{order?.book_details?.year}</span> |{" "}
-            <span>{order?.book_details?.academicyear}</span>
-            <div className="font-medium">{order?.status}</div>
+            <span>{order?.kit_details?.collegeId}</span> |{" "}
+            <span>{order?.kit_details?.courseyear}</span> |{" "}
+            <span>{order?.kit_details?.academicyear}</span>
+            <div className="font-medium">
+              Transaction ID :{order?.transactionId}
+            </div>
+            <div className="font-medium">Status :{order?.status}</div>
           </div>
           <div
             onClick={() => handleUpdate()}

@@ -24,6 +24,11 @@ const StoreMenu = ({ menu, handleMenu }) => {
           )}
           {path !== "/itemsList" && (
             <Link to="/itemsList" className="link">
+              <span className=" text-nowrap">Book List</span>
+            </Link>
+          )}
+          {path !== "/itemList" && (
+            <Link to="/itemList" className="link">
               <span className=" text-nowrap">Item List</span>
             </Link>
           )}
@@ -48,12 +53,17 @@ const StoreMenu = ({ menu, handleMenu }) => {
               Orders
             </Link>
           )}
-          {path !== "/addKit" && (
+          {path !== "/OrdersIssued" && (
+            <Link to="/OrdersIssued" className="link">
+              Issued
+            </Link>
+          )}
+          {path !== "/addKit" && role === "admin" && (
             <Link to="/addKit" className="link">
               Add Kit
             </Link>
           )}
-          {path !== "/addcollege" && (
+          {path !== "/addcollege" && role === "admin" && (
             <Link to="/addcollege" className="link">
               Add College
             </Link>

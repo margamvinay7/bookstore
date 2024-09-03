@@ -23,6 +23,13 @@ export const itemsApi = createApi({
       query: () => "/getItems",
       providesTags: ["items"],
     }),
+    getItemsBycollegeAndCourse: builder.query({
+      query: (args) => {
+        const { college, course } = args;
+        return `/getItemsBycollegeAndCourse?college=${college}&course=${course}`;
+      },
+      providesTags: ["items"],
+    }),
     addItem: builder.mutation({
       query: (item) => ({
         url: "/addItem",
@@ -47,4 +54,5 @@ export const {
   useUpdateItemMutation,
   useGetItemByIdQuery,
   useGetItemsQuery,
+  useGetItemsBycollegeAndCourseQuery,
 } = itemsApi;

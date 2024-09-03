@@ -20,7 +20,7 @@ const EmailVerification = () => {
   console.log(formData);
   const handleSubmit = async () => {
     const otpCheck = otp.join("");
-
+    console.log(otpCheck);
     try {
       const response = await axios.post(
         "http://localhost:9000/api/email/verifyEmail",
@@ -123,6 +123,7 @@ const EmailVerification = () => {
           withCredentials: true, // Include credentials (cookies) in the request
         }
       );
+      console.log(response);
     } catch (error) {
       console.log(error);
     }
